@@ -26,7 +26,7 @@ export interface PlankraftData {
 export const DEFAULT_TAGS = ["tapered legs", "dovetail", "walnut", "matte oil"];
 
 export const DEFAULT_DATA: PlankraftData = {
-  brief: "A walnut nightstand, about 24″ tall, with one drawer and tapered legs. Hand-rubbed oil finish.",
+  brief: "",
   dim: { w: "22", d: "16", h: "24" },
   wood: "Walnut",
   joinery: "Dovetail",

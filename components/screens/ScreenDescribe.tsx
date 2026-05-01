@@ -71,6 +71,7 @@ export default function ScreenDescribe() {
               value={data.brief}
               onChange={(e) => setData({ ...data, brief: e.target.value })}
               placeholder="A walnut nightstand. 24 inches. One drawer, tapered legs, oil finish. Nothing fancy — just right."
+              autoFocus
             />
             <div className="s1-prompt-foot">
               <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
@@ -78,7 +79,12 @@ export default function ScreenDescribe() {
                 <IconBtn label="Sketch" icon="✎" />
                 <IconBtn label="Reference" icon="↗" />
               </div>
-              <button className="btn btn-primary" onClick={() => router.push("/inspiration")}>
+              <button
+                className="btn btn-primary"
+                onClick={() => router.push("/inspiration")}
+                disabled={data.brief.trim().length === 0}
+                style={{ opacity: data.brief.trim().length === 0 ? 0.4 : 1 }}
+              >
                 Continue
                 <span style={{ fontFamily: "var(--mono)", fontSize: 12 }}>→</span>
               </button>

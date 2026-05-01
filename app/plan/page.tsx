@@ -10,5 +10,5 @@ export default async function PlanPage({ searchParams }: Props) {
   const sp = await searchParams;
   const fromUrl = sp.d ? decodePlan(sp.d) : null;
   const plan = fromUrl ?? SAMPLE_NIGHTSTAND;
-  return <PlanView plan={plan} />;
+  return <PlanView plan={plan} isSample={!fromUrl} />;
 }

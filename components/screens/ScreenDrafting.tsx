@@ -75,8 +75,27 @@ export default function ScreenDrafting() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fallback redirect: if the stream ends but onFinish didn't fire (or
+  // didn't redirect), watch for isLoading→false with a complete object.
+  useEffect(() => {
+    if (completedRef.current) return;
+    if (isLoading) return;
+    if (error) return;
+    if (!object) return;
+    const parsed = PlanSchema.safeParse(object);
+    if (!parsed.success) return;
+    completedRef.current = true;
+    const encoded = encodePlan(parsed.data as Plan);
+    router.replace(`/plan?d=${encoded}`);
+  }, [isLoading, object, error, router]);
+
   const stage = useMemo(() => computeStageFromObject(object as Partial<Plan> | undefined), [object]);
-  const pct = Math.min(100, Math.round((stage / STAGES.length) * 100));
+  // Cap the displayed progress at 95% while still streaming so users don't
+  // think it's stuck at 100% during the post-stream redirect window.
+  const cappedStage = isLoading ? Math.min(stage, STAGES.length - 1) : stage;
+  const pct = isLoading
+    ? Math.min(95, Math.round((cappedStage / STAGES.length) * 100))
+    : 100;
   const visibleSteps = stage === 0 && isLoading ? 1 : Math.min(STAGES.length, stage + (isLoading ? 1 : 0));
 
   return (

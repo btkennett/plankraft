@@ -12,7 +12,7 @@ import ToolList from "./ToolList";
 import ExplodedCanvas from "./ExplodedCanvas";
 import PlanStyleToggle from "./PlanStyleToggle";
 
-export default function PlanView({ plan }: { plan: Plan }) {
+export default function PlanView({ plan, isSample = false }: { plan: Plan; isSample?: boolean }) {
   const [activePartId, setActivePartId] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0);
   const [planStyle, setPlanStyle] = useState<PlanStyle>("render");
@@ -35,10 +35,12 @@ export default function PlanView({ plan }: { plan: Plan }) {
           <div>
             <div className="s1-eyebrow-row" style={{ marginBottom: 18 }}>
               <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--sienna)", fontWeight: 600 }}>
-                PLAN · № {String(plan.number).padStart(3, "0")}
+                {isSample ? "SAMPLE" : "PLAN"} · № {String(plan.number).padStart(3, "0")}
               </span>
               <span style={{ flex: 1, maxWidth: 80, height: 1, background: "var(--rule)" }} />
-              <span className="eyebrow">Drafted in {plan.draftedSeconds}s</span>
+              <span className="eyebrow">
+                {isSample ? "Example output — your brief generates a different plan" : `Drafted in ${plan.draftedSeconds}s`}
+              </span>
             </div>
             <h1 className="display" style={{ fontSize: "clamp(56px, 8vw, 112px)" }}>
               {plan.title.lead} <em style={{ fontStyle: "italic", color: "var(--sienna)" }}>{plan.title.emphasis}</em>
