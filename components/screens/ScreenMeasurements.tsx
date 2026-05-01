@@ -138,7 +138,7 @@ export default function ScreenMeasurements() {
                 Live preview
               </div>
               <div className="l serif" style={{ marginTop: 6 }}>
-                {data.wood} · nightstand
+                {data.wood} · proportions
               </div>
             </div>
             <div className="r">

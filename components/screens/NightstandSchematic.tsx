@@ -36,6 +36,7 @@ export default function NightstandSchematic({ dim }: NightstandSchematicProps) {
       </defs>
       <rect width="100%" height="100%" fill="url(#schematic-grid)" />
 
+      {/* Abstract isometric volume — just W×D×H, no archetype-specific marks */}
       <g stroke="var(--ink)" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round">
         <path
           d={`M ${a1[0]} ${a1[1]} L ${a2[0]} ${a2[1]} L ${a3[0]} ${a3[1]} L ${a4[0]} ${a4[1]} Z`}
@@ -50,9 +51,6 @@ export default function NightstandSchematic({ dim }: NightstandSchematicProps) {
         <line x1={a2[0]} y1={a2[1]} x2={b2[0]} y2={b2[1]} />
         <line x1={a3[0]} y1={a3[1]} x2={b3[0]} y2={b3[1]} />
         <line x1={a4[0]} y1={a4[1]} x2={b4[0]} y2={b4[1]} />
-
-        <rect x={cx - W / 2 + 14} y={cy - H + 18} width={W - 28} height={H * 0.35} fill="rgba(0,0,0,0.04)" />
-        <circle cx={cx} cy={cy - H + 18 + H * 0.175} r="3" fill="var(--sienna)" stroke="none" />
       </g>
 
       <g stroke="var(--sienna)" strokeWidth="0.8" fill="var(--sienna)" fontFamily="var(--mono)" fontSize="10">
