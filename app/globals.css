@@ -518,3 +518,41 @@ body {
 .s4-corner-tick.br { bottom: 8px; right: 8px; border-bottom: 1.5px solid; border-right: 1.5px solid; }
 
 @media (max-width: 1000px) { .s4-wrap { grid-template-columns: 1fr; } }
+
+/* === Print stylesheet (Export PDF) ===
+   The on-screen Plan view IS the print artifact — Save as PDF in the print
+   dialog produces a pixel-faithful spread. No separate PDF renderer needed. */
+@media print {
+  @page { size: A3 landscape; margin: 0.4in; }
+
+  html, body { background: var(--paper) !important; }
+  body { overflow-x: visible; }
+
+  *, *::before, *::after {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Hide app chrome — only the plan content prints */
+  .chrome,
+  .no-print { display: none !important; }
+
+  /* Drop the SVG grain noise — too heavy and inconsistent across drivers */
+  .paper-bg::before { display: none !important; }
+
+  .screen { padding: 0 !important; min-height: 0 !important; }
+  .s5-wrap { gap: 18px !important; }
+
+  /* Keep hero rails + canvas together */
+  .s5-banner,
+  .s5-hero,
+  .s5-second { break-inside: avoid; page-break-inside: avoid; }
+
+  /* Tone the canvas radial bg flat for cleaner print */
+  .s5-canvas.sketch { background: oklch(0.94 0.02 80) !important; }
+  .s5-canvas.render { background: oklch(0.96 0.010 95) !important; }
+  /* blueprint stays — it's the point of that mode */
+
+  /* Solid borders print cleaner than dashed in many drivers */
+  .rule { background: var(--rule) !important; }
+}

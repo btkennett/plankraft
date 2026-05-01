@@ -1,16 +1,33 @@
 "use client";
 
-import type { ArchetypeRenderer } from "./types";
+import type { ArchetypeRendererProps } from "./types";
 
-const CUTS_ORDER = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+const CUTS_ORDER = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
 
-const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onPartHover, widthCallout = 22 }) => {
+interface Props extends ArchetypeRendererProps {
+  /** Italic sketch-mode annotation drawn in the bottom-right corner. */
+  sketchAnnotation?: string[];
+}
+
+/**
+ * Generic exploded-view renderer used by every archetype. Shared SVG defs
+ * (paper grid, blueprint grid, render-mode dot pattern, two grain patterns,
+ * drop shadow, sketch wobble) prefixed `pl-*`.
+ *
+ * Per-archetype customization happens through the registry (only the sketch
+ * annotation today; future: archetype-specific dimension callouts).
+ */
+export default function GenericExplodedView({
+  parts,
+  style,
+  activePartId,
+  onPartHover,
+  widthCallout,
+  sketchAnnotation,
+}: Props) {
   const isBlue = style === "blueprint";
   const isRender = style === "render";
-
-  const stroke = isBlue ? "var(--blue-ink)" : "var(--ink)";
   const accent = isBlue ? "var(--blue-cyan)" : "var(--sienna)";
-
   const woodFill = (i: number) => {
     if (isBlue) return "transparent";
     if (isRender) return `oklch(${0.55 - (i % 3) * 0.04} ${0.08 - (i % 3) * 0.01} ${48 + (i * 3) % 12})`;
@@ -25,27 +42,27 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
       style={{ width: "100%", height: "100%", display: "block" }}
     >
       <defs>
-        <pattern id="np-sketch-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <pattern id="pl-sketch-grid" width="40" height="40" patternUnits="userSpaceOnUse">
           <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--rule-soft)" strokeWidth="0.6" opacity="0.5" />
         </pattern>
-        <pattern id="np-blue-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <pattern id="pl-blue-grid" width="40" height="40" patternUnits="userSpaceOnUse">
           <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--blue-rule)" strokeWidth="0.6" opacity="0.4" />
         </pattern>
-        <pattern id="np-render-grid" width="80" height="80" patternUnits="userSpaceOnUse">
+        <pattern id="pl-render-grid" width="80" height="80" patternUnits="userSpaceOnUse">
           <circle cx="0" cy="0" r="1" fill="var(--ink-faint)" opacity="0.2" />
         </pattern>
-        <pattern id="np-grain1" width="200" height="20" patternUnits="userSpaceOnUse">
+        <pattern id="pl-grain1" width="200" height="20" patternUnits="userSpaceOnUse">
           <rect width="200" height="20" fill="oklch(0.52 0.07 48)" />
           <path d="M 0 5 Q 50 3 100 6 T 200 5" stroke="oklch(0.38 0.06 42)" strokeWidth="0.6" fill="none" opacity="0.5" />
           <path d="M 0 12 Q 60 14 120 11 T 200 13" stroke="oklch(0.32 0.05 40)" strokeWidth="0.4" fill="none" opacity="0.6" />
           <path d="M 0 18 Q 40 16 90 19 T 200 17" stroke="oklch(0.42 0.06 45)" strokeWidth="0.3" fill="none" opacity="0.5" />
         </pattern>
-        <pattern id="np-grain2" width="160" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(2)">
+        <pattern id="pl-grain2" width="160" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(2)">
           <rect width="160" height="20" fill="oklch(0.48 0.07 50)" />
           <path d="M 0 6 Q 40 4 80 7 T 160 6" stroke="oklch(0.34 0.06 44)" strokeWidth="0.5" fill="none" opacity="0.6" />
           <path d="M 0 14 Q 50 16 100 13 T 160 15" stroke="oklch(0.30 0.05 40)" strokeWidth="0.4" fill="none" opacity="0.5" />
         </pattern>
-        <filter id="np-drop-shadow" x="-50%" y="-50%" width="200%" height="200%">
+        <filter id="pl-drop-shadow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
           <feOffset dx="2" dy="4" />
           <feComponentTransfer>
@@ -56,7 +73,7 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        <filter id="np-rough">
+        <filter id="pl-rough">
           <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" />
           <feDisplacementMap in="SourceGraphic" scale="1.5" />
         </filter>
@@ -67,14 +84,14 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
         height="1000"
         fill={
           isBlue
-            ? "url(#np-blue-grid)"
+            ? "url(#pl-blue-grid)"
             : isRender
-              ? "url(#np-render-grid)"
-              : "url(#np-sketch-grid)"
+              ? "url(#pl-render-grid)"
+              : "url(#pl-sketch-grid)"
         }
       />
 
-      {/* explosion guide line */}
+      {/* explosion guide line through center */}
       <g stroke={accent} strokeWidth="0.8" strokeDasharray="3 4" opacity="0.45">
         <line x1="500" y1="80" x2="500" y2="940" />
       </g>
@@ -83,11 +100,9 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
       <g style={{ transition: "all 0.4s" }}>
         {parts.map((p, i) => {
           const isActive = activePartId === p.cutId;
-          const colorIdx = CUTS_ORDER.indexOf(p.cutId);
+          const colorIdx = Math.max(0, CUTS_ORDER.indexOf(p.cutId));
           let fill = woodFill(colorIdx);
-          if (isRender) {
-            fill = colorIdx % 2 === 0 ? "url(#np-grain1)" : "url(#np-grain2)";
-          }
+          if (isRender) fill = colorIdx % 2 === 0 ? "url(#pl-grain1)" : "url(#pl-grain2)";
           return (
             <g
               key={`${p.cutId}-${i}`}
@@ -101,7 +116,7 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
               }}
             >
               {isRender ? (
-                <g filter="url(#np-drop-shadow)">
+                <g filter="url(#pl-drop-shadow)">
                   <polygon
                     points={`${p.x},${p.y} ${p.x + p.w},${p.y} ${p.x + p.w + 8},${p.y - 6} ${p.x + 8},${p.y - 6}`}
                     fill="oklch(0.62 0.06 50)"
@@ -126,7 +141,7 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
                   fillOpacity={isBlue ? 0 : isActive ? 0.85 : 0.6}
                   stroke={isActive ? accent : isBlue ? "var(--blue-cyan)" : woodStroke}
                   strokeWidth={isActive ? 2 : style === "sketch" ? 1.6 : 1.2}
-                  filter={style === "sketch" ? "url(#np-rough)" : undefined}
+                  filter={style === "sketch" ? "url(#pl-rough)" : undefined}
                 />
               )}
 
@@ -148,7 +163,7 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
         })}
       </g>
 
-      {/* labels */}
+      {/* labels with callout lines */}
       <g fontFamily="var(--mono)" fontSize="12" fontWeight="500" fill={isBlue ? "var(--blue-ink)" : "var(--ink)"}>
         {parts
           .filter((p) => p.label)
@@ -174,22 +189,27 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
           })}
       </g>
 
-      {/* width callout on top */}
-      <g stroke={accent} fill={accent} fontFamily="var(--mono)" fontSize="11" strokeWidth="0.8">
-        <line x1="280" y1="80" x2="720" y2="80" />
-        <line x1="280" y1="74" x2="280" y2="86" />
-        <line x1="720" y1="74" x2="720" y2="86" />
-        <text x="500" y="68" textAnchor="middle" stroke="none" fontWeight="600">
-          {widthCallout}″
-        </text>
-      </g>
+      {/* width callout on top piece */}
+      {typeof widthCallout === "number" && (
+        <g stroke={accent} fill={accent} fontFamily="var(--mono)" fontSize="11" strokeWidth="0.8">
+          <line x1="280" y1="80" x2="720" y2="80" />
+          <line x1="280" y1="74" x2="280" y2="86" />
+          <line x1="720" y1="74" x2="720" y2="86" />
+          <text x="500" y="68" textAnchor="middle" stroke="none" fontWeight="600">
+            {widthCallout}″
+          </text>
+        </g>
+      )}
 
-      {/* hand-written sketch annotation */}
-      {style === "sketch" && (
+      {/* archetype-specific sketch annotation */}
+      {style === "sketch" && sketchAnnotation && sketchAnnotation.length > 0 && (
         <g transform="translate(770, 880) rotate(-4)">
           <text fontFamily="var(--serif)" fontStyle="italic" fontSize="20" fill="var(--ink-soft)">
-            <tspan x="0" dy="0">tapered legs,</tspan>
-            <tspan x="0" dy="22">3° splay</tspan>
+            {sketchAnnotation.map((line, idx) => (
+              <tspan key={idx} x="0" dy={idx === 0 ? "0" : "22"}>
+                {line}
+              </tspan>
+            ))}
           </text>
           <path d="M -10 -4 Q -30 30 -50 50" stroke="var(--ink-soft)" fill="none" strokeWidth="1" opacity="0.5" />
         </g>
@@ -209,6 +229,4 @@ const NightstandRenderer: ArchetypeRenderer = ({ parts, style, activePartId, onP
       )}
     </svg>
   );
-};
-
-export default NightstandRenderer;
+}

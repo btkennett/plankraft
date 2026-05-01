@@ -55,15 +55,30 @@ export default function PlanView({ plan }: { plan: Plan }) {
             </h1>
           </div>
 
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <div className="no-print" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <PlanStyleToggle value={planStyle} onChange={setPlanStyle} />
             <Link href="/brief" className="btn btn-ghost">
               ← Edit inputs
             </Link>
-            <button type="button" className="btn btn-ghost" disabled title="Phase 8">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => {
+                if (typeof window === "undefined") return;
+                if (navigator.clipboard?.writeText) {
+                  navigator.clipboard.writeText(window.location.href);
+                }
+              }}
+            >
               <span style={{ fontSize: 14 }}>↗</span> Share
             </button>
-            <button type="button" className="btn btn-primary" disabled title="Phase 7">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                if (typeof window !== "undefined") window.print();
+              }}
+            >
               <span style={{ fontSize: 14 }}>↓</span> Export PDF
             </button>
           </div>
