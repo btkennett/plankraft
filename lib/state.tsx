@@ -6,13 +6,24 @@ export type Wood = "Walnut" | "White oak" | "Cherry" | "Maple" | "Pine" | "Other
 export type Joinery = "Dovetail" | "Mortise & tenon" | "Pocket screw" | "Dowel" | "Whatever's easiest";
 export type Skill = "Beginner" | "Intermediate" | "Advanced";
 
+export interface Reference {
+  id: string;
+  url: string;
+  label?: string;
+  tags: string[];
+}
+
 export interface PlankraftData {
   brief: string;
   dim: { w: string; d: string; h: string };
   wood: Wood;
   joinery: Joinery;
   skill: Skill;
+  references: Reference[];
+  activeTags: string[];
 }
+
+export const DEFAULT_TAGS = ["tapered legs", "dovetail", "walnut", "matte oil"];
 
 export const DEFAULT_DATA: PlankraftData = {
   brief: "A walnut nightstand, about 24″ tall, with one drawer and tapered legs. Hand-rubbed oil finish.",
@@ -20,6 +31,8 @@ export const DEFAULT_DATA: PlankraftData = {
   wood: "Walnut",
   joinery: "Dovetail",
   skill: "Intermediate",
+  references: [],
+  activeTags: DEFAULT_TAGS,
 };
 
 const STORAGE_KEY = "plankraft.data";

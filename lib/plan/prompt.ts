@@ -60,6 +60,15 @@ NUMBER
 Return JSON matching the schema. Be specific. Don't pad. Every field must be answerable from the user's brief.`;
 
 export function composeUserPrompt(input: PlanInput): string {
+  const tags = input.activeTags && input.activeTags.length > 0 ? input.activeTags.join(", ") : "—";
+
+  const refs =
+    input.references && input.references.length > 0
+      ? input.references
+          .map((r, i) => `  ${i + 1}. ${r.label ?? r.url}${r.tags.length ? ` [${r.tags.join(", ")}]` : ""}`)
+          .join("\n")
+      : "  (none provided)";
+
   return `PROJECT BRIEF
 ${input.brief}
 
@@ -76,5 +85,8 @@ SKILL LEVEL
 ${input.skill}
 
 INSPIRATION TAGS
-tapered legs, dovetail, walnut, matte oil, low-profile pull`;
+${tags}
+
+REFERENCES
+${refs}`;
 }

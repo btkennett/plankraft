@@ -103,6 +103,16 @@ export const PlanInputSchema = z.object({
   wood: z.string(),
   joinery: z.string(),
   skill: z.string(),
+  references: z
+    .array(
+      z.object({
+        url: z.string(),
+        label: z.string().optional(),
+        tags: z.array(z.string()),
+      }),
+    )
+    .optional(),
+  activeTags: z.array(z.string()).optional(),
 });
 
 export type PlanInput = z.infer<typeof PlanInputSchema>;

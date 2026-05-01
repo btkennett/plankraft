@@ -67,7 +67,10 @@ export default function ScreenDrafting() {
   useEffect(() => {
     if (submittedRef.current) return;
     submittedRef.current = true;
-    submit(data);
+    submit({
+      ...data,
+      references: data.references.map((r) => ({ url: r.url, label: r.label, tags: r.tags })),
+    });
     // We deliberately do NOT include data in deps — submit once on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
