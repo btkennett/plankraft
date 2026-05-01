@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- kraft paper bg -->
+  <rect width="32" height="32" rx="4" fill="oklch(0.93 0.022 80)"/>
+  <!-- isometric nightstand silhouette in walnut ink -->
+  <g stroke="oklch(0.22 0.025 50)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M8 13 L16 9 L24 13 L24 23 L16 27 L8 23 Z"/>
+    <path d="M8 13 L16 17 L24 13"/>
+    <path d="M16 17 L16 27"/>
+  </g>
+  <!-- sienna drawer-pull dot -->
+  <circle cx="16" cy="20" r="1.2" fill="oklch(0.58 0.130 45)"/>
+</svg>

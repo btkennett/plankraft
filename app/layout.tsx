@@ -38,6 +38,17 @@ export const metadata: Metadata = {
   title: "Plankraft — Woodworking Plans",
   description:
     "Describe a project in plain language; receive a complete build plan with cut list, exploded view, build sequence, and bill of materials.",
+  openGraph: {
+    title: "Plankraft — Woodworking Plans",
+    description: "AI woodworking plans · cut list, exploded view, build sequence.",
+    type: "website",
+    siteName: "Plankraft",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Plankraft — Woodworking Plans",
+    description: "AI woodworking plans · cut list, exploded view, build sequence.",
+  },
 };
 
 export default function RootLayout({
