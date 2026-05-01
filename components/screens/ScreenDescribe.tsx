@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePlankraftState } from "@/lib/state";
 import PaperPreview from "./PaperPreview";
@@ -12,38 +14,77 @@ const SUGGESTIONS = [
   "live-edge slab desk",
 ] as const;
 
-interface IconBtnProps {
-  label: string;
-  icon: string;
+// Web Speech API typings — minimal, what we actually use.
+interface SpeechRecResult {
+  isFinal: boolean;
+  0: { transcript: string };
 }
+interface SpeechRecEvent {
+  results: ArrayLike<SpeechRecResult>;
+}
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((e: SpeechRecEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((e: Event) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+type SpeechRecCtor = new () => SpeechRecognition;
 
-function IconBtn({ label, icon }: IconBtnProps) {
-  return (
-    <button
-      type="button"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        background: "transparent",
-        border: "1px solid var(--rule)",
-        padding: "7px 12px",
-        borderRadius: 2,
-        fontSize: 12,
-        color: "var(--ink-soft)",
-        cursor: "pointer",
-        fontFamily: "var(--sans)",
-      }}
-    >
-      <span style={{ fontSize: 13 }}>{icon}</span>
-      {label}
-    </button>
-  );
+declare global {
+  interface Window {
+    SpeechRecognition?: SpeechRecCtor;
+    webkitSpeechRecognition?: SpeechRecCtor;
+  }
 }
 
 export default function ScreenDescribe() {
   const { data, setData } = usePlankraftState();
   const router = useRouter();
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recogRef = useRef<SpeechRecognition | null>(null);
+
+  useEffect(() => {
+    const Ctor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    setVoiceSupported(!!Ctor);
+  }, []);
+
+  function toggleVoice() {
+    const Ctor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    if (!Ctor) return;
+    if (listening) {
+      recogRef.current?.stop();
+      return;
+    }
+    const rec = new Ctor();
+    rec.lang = "en-US";
+    rec.interimResults = true;
+    rec.continuous = false;
+    let baseline = data.brief;
+    rec.onresult = (e: SpeechRecEvent) => {
+      let text = "";
+      for (let i = 0; i < e.results.length; i++) {
+        text += e.results[i][0].transcript;
+      }
+      const next = baseline ? `${baseline} ${text}`.trim() : text;
+      setData((prev) => ({ ...prev, brief: next }));
+    };
+    rec.onend = () => {
+      setListening(false);
+      recogRef.current = null;
+    };
+    rec.onerror = () => {
+      setListening(false);
+      recogRef.current = null;
+    };
+    recogRef.current = rec;
+    setListening(true);
+    rec.start();
+  }
 
   return (
     <section className="screen" id="screen-1">
@@ -74,10 +115,21 @@ export default function ScreenDescribe() {
               autoFocus
             />
             <div className="s1-prompt-foot">
-              <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                <IconBtn label="Voice" icon="🎙" />
-                <IconBtn label="Sketch" icon="✎" />
-                <IconBtn label="Reference" icon="↗" />
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                {voiceSupported && (
+                  <button
+                    type="button"
+                    onClick={toggleVoice}
+                    className="s1-iconbtn"
+                    aria-pressed={listening}
+                    style={listening ? { background: "var(--sienna)", color: "var(--paper)", borderColor: "var(--sienna)" } : undefined}
+                  >
+                    <span>🎙</span>{listening ? "Stop" : "Voice"}
+                  </button>
+                )}
+                <Link href="/inspiration" className="s1-iconbtn">
+                  <span>↗</span>Reference
+                </Link>
               </div>
               <button
                 className="btn btn-primary"

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { Plan, PlanStyle } from "@/lib/plan/types";
+import type { Plan, PlanStyle, ToolStatus } from "@/lib/plan/types";
 import PlanBanner from "./PlanBanner";
 import CutListRail from "./CutListRail";
 import BuildStepsRail from "./BuildStepsRail";
@@ -12,12 +12,43 @@ import ToolList from "./ToolList";
 import ExplodedCanvas from "./ExplodedCanvas";
 import PlanStyleToggle from "./PlanStyleToggle";
 
+// Heuristic: which cuts does a build step reference?
+// Match cut.name tokens against step.title + step.meta.
+function cutsForStep(plan: Plan, stepIdx: number): string[] {
+  const step = plan.steps[stepIdx];
+  if (!step) return [];
+  const haystack = (step.title + " " + step.meta).toLowerCase();
+  const hits: string[] = [];
+  for (const cut of plan.cuts) {
+    const tokens = cut.name.toLowerCase().split(/\s+/).filter((t) => t.length > 3);
+    if (tokens.some((t) => haystack.includes(t))) hits.push(cut.id);
+  }
+  return hits;
+}
+
+const NEXT_STATUS: Record<ToolStatus, ToolStatus> = { OWN: "NEED", NEED: "BUILD", BUILD: "OWN" };
+
 export default function PlanView({ plan, isSample = false }: { plan: Plan; isSample?: boolean }) {
   const [activePartId, setActivePartId] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0);
   const [planStyle, setPlanStyle] = useState<PlanStyle>("render");
+  const [toolOverrides, setToolOverrides] = useState<Record<string, ToolStatus>>({});
+
+  // Cuts highlighted from the active build step (overrides hover when no hover active)
+  const stepCutIds = useMemo(() => cutsForStep(plan, activeStep), [plan, activeStep]);
+  const effectiveActivePart = activePartId ?? (stepCutIds.length === 1 ? stepCutIds[0] : null);
+
+  // Apply user overrides to tool statuses
+  const tools = plan.tools.map((t) => ({ ...t, status: toolOverrides[t.name] ?? t.status }));
 
   const bomTotal = plan.bom.reduce((sum, item) => sum + item.price, 0);
+
+  function cycleToolStatus(name: string) {
+    setToolOverrides((prev) => {
+      const current = prev[name] ?? plan.tools.find((t) => t.name === name)?.status ?? "OWN";
+      return { ...prev, [name]: NEXT_STATUS[current] };
+    });
+  }
 
   return (
     <section className="screen" id="screen-5" style={{ padding: "96px 24px 80px" }}>
@@ -95,7 +126,8 @@ export default function PlanView({ plan, isSample = false }: { plan: Plan; isSam
             archetype={plan.archetype}
             parts={plan.exploded}
             style={planStyle}
-            activePartId={activePartId}
+            activePartId={effectiveActivePart}
+            highlightedPartIds={activePartId ? null : stepCutIds}
             onPartHover={setActivePartId}
             widthCallout={plan.banner.footprint.w}
           />
@@ -106,7 +138,7 @@ export default function PlanView({ plan, isSample = false }: { plan: Plan; isSam
         <div className="s5-second">
           <LumberYield boards={plan.lumber} />
           <Bom items={plan.bom} total={bomTotal} />
-          <ToolList tools={plan.tools} />
+          <ToolList tools={tools} onCycleStatus={cycleToolStatus} />
         </div>
 
         {/* Footer note */}
@@ -132,7 +164,7 @@ export default function PlanView({ plan, isSample = false }: { plan: Plan; isSam
           <span>
             {plan.meta.revision} · {plan.meta.wood.toUpperCase()} · {plan.meta.joinery.toUpperCase()}
           </span>
-          <span>SCALE 1:6 · DIMS IN INCHES · THE REST IS SAWDUST</span>
+          <span>DIMS IN INCHES · THE REST IS SAWDUST</span>
         </div>
       </div>
     </section>

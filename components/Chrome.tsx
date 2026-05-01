@@ -13,7 +13,7 @@ const STEPS = [
 ] as const;
 
 function activeIndex(pathname: string): number {
-  if (pathname === "/") return 0;
+  if (pathname === "/") return -1;
   const idx = STEPS.findIndex((s) => pathname === s.path || pathname.startsWith(`${s.path}/`));
   return idx === -1 ? 0 : idx;
 }
@@ -21,27 +21,17 @@ function activeIndex(pathname: string): number {
 export default function Chrome() {
   const pathname = usePathname();
   const stepIdx = activeIndex(pathname);
+  const current = stepIdx >= 0 ? STEPS[stepIdx] : null;
 
   return (
     <header className="chrome">
       <Link href="/" className="chrome-mark" style={{ textDecoration: "none", color: "inherit" }}>
         <span className="dot" />
-        Plankraft
-        <span
-          className="mono"
-          style={{
-            fontSize: 11,
-            color: "var(--ink-faint)",
-            letterSpacing: "0.1em",
-            marginLeft: 8,
-            fontWeight: 400,
-          }}
-        >
-          Vol. I · № 042
-        </span>
+        <span>Plankraft</span>
       </Link>
 
-      <nav className="steps" aria-label="Workflow steps">
+      {/* Desktop step rail */}
+      <nav className="steps steps-desktop" aria-label="Workflow steps">
         {STEPS.map((s, i) => (
           <Fragment key={s.path}>
             <Link
@@ -55,6 +45,16 @@ export default function Chrome() {
           </Fragment>
         ))}
       </nav>
+
+      {/* Mobile compact: current step + progress */}
+      {current && (
+        <div className="steps-mobile" aria-label={`Step ${stepIdx + 1} of ${STEPS.length}`}>
+          <span className="steps-mobile-pct">
+            {String(stepIdx + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
+          </span>
+          <span className="steps-mobile-label">{current.label}</span>
+        </div>
+      )}
     </header>
   );
 }

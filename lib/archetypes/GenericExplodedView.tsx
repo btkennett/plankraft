@@ -21,10 +21,12 @@ export default function GenericExplodedView({
   parts,
   style,
   activePartId,
+  highlightedPartIds,
   onPartHover,
   widthCallout,
   sketchAnnotation,
 }: Props) {
+  const highlightSet = new Set(highlightedPartIds ?? []);
   const isBlue = style === "blueprint";
   const isRender = style === "render";
   const accent = isBlue ? "var(--blue-cyan)" : "var(--sienna)";
@@ -100,19 +102,24 @@ export default function GenericExplodedView({
       <g style={{ transition: "all 0.4s" }}>
         {parts.map((p, i) => {
           const isActive = activePartId === p.cutId;
+          const isHighlighted = !isActive && highlightSet.has(p.cutId);
           const colorIdx = Math.max(0, CUTS_ORDER.indexOf(p.cutId));
           let fill = woodFill(colorIdx);
           if (isRender) fill = colorIdx % 2 === 0 ? "url(#pl-grain1)" : "url(#pl-grain2)";
+          // Dim non-relevant parts when a step has highlights
+          const dim = highlightSet.size > 0 && !isActive && !isHighlighted ? 0.4 : 1;
           return (
             <g
               key={`${p.cutId}-${i}`}
               onMouseEnter={() => onPartHover(p.cutId)}
               onMouseLeave={() => onPartHover(null)}
+              onClick={() => onPartHover(p.cutId)}
               style={{
                 cursor: "pointer",
-                transition: "transform 0.3s",
+                transition: "transform 0.3s, opacity 0.3s",
                 transformOrigin: `${p.x + p.w / 2}px ${p.y + p.h / 2}px`,
                 transform: isActive ? "scale(1.08)" : "scale(1)",
+                opacity: dim,
               }}
             >
               {isRender ? (
@@ -129,7 +136,15 @@ export default function GenericExplodedView({
                     stroke={woodStroke}
                     strokeWidth="0.8"
                   />
-                  <rect x={p.x} y={p.y} width={p.w} height={p.h} fill={fill} stroke={woodStroke} strokeWidth="0.8" />
+                  <rect
+                    x={p.x}
+                    y={p.y}
+                    width={p.w}
+                    height={p.h}
+                    fill={fill}
+                    stroke={isActive || isHighlighted ? accent : woodStroke}
+                    strokeWidth={isActive ? 2 : isHighlighted ? 1.5 : 0.8}
+                  />
                 </g>
               ) : (
                 <rect
@@ -138,9 +153,9 @@ export default function GenericExplodedView({
                   width={p.w}
                   height={p.h}
                   fill={fill}
-                  fillOpacity={isBlue ? 0 : isActive ? 0.85 : 0.6}
-                  stroke={isActive ? accent : isBlue ? "var(--blue-cyan)" : woodStroke}
-                  strokeWidth={isActive ? 2 : style === "sketch" ? 1.6 : 1.2}
+                  fillOpacity={isBlue ? 0 : isActive ? 0.85 : isHighlighted ? 0.75 : 0.6}
+                  stroke={isActive || isHighlighted ? accent : isBlue ? "var(--blue-cyan)" : woodStroke}
+                  strokeWidth={isActive ? 2 : isHighlighted ? 1.6 : style === "sketch" ? 1.6 : 1.2}
                   filter={style === "sketch" ? "url(#pl-rough)" : undefined}
                 />
               )}

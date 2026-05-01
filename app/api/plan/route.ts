@@ -4,7 +4,7 @@ import { PlanInputSchema, PlanSchema } from "@/lib/plan/schema";
 import { SYSTEM_PROMPT, composeUserPrompt } from "@/lib/plan/prompt";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   const result = streamObject({
-    model: anthropic("claude-sonnet-4-6"),
+    model: anthropic("claude-opus-4-7"),
     schema: PlanSchema,
     system: SYSTEM_PROMPT,
     prompt: composeUserPrompt(parsed.data),

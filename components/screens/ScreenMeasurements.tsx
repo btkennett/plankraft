@@ -150,7 +150,7 @@ export default function ScreenMeasurements() {
             </div>
           </div>
           <div className="s3-schema-svg">
-            <NightstandSchematic dim={data.dim} />
+            <NightstandSchematic dim={data.dim} wood={data.wood} joinery={data.joinery} skill={data.skill} />
           </div>
           <div className="s3-schema-foot">
             <span className="mono">{data.joinery.toUpperCase()}</span>
