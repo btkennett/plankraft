@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# design reference (extracted from Claude Design handoff zip — not shipped)
+/design-handoff
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
